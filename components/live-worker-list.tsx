@@ -83,7 +83,7 @@ export function LiveWorkerList({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <Link
-                    href={`/workers/${worker.worker_id}`}
+                    href={`/workers?workerId=${encodeURIComponent(worker.worker_id)}`}
                     className="font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--foreground)] underline-offset-4 transition hover:text-[var(--accent-strong)] hover:underline"
                   >
                     {worker.display_name}
@@ -123,7 +123,7 @@ export function LiveWorkerList({
                   Dispatch this service
                 </Link>
                 <Link
-                  href={`/workers/${worker.worker_id}`}
+                  href={`/workers?workerId=${encodeURIComponent(worker.worker_id)}`}
                   className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:-translate-y-0.5"
                 >
                   View full profile

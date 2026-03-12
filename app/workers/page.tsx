@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Panel, SectionHeading, StatusPill } from "@/components/ui";
@@ -11,12 +12,6 @@ import {
   type WorkerProfileRecord,
 } from "@/lib/supabase";
 
-type WorkerProfilePageProps = {
-  params: Promise<{
-    workerId: string;
-  }>;
-};
-
 type WorkerProfileState = {
   loading: boolean;
   error: string;
@@ -24,9 +19,10 @@ type WorkerProfileState = {
   availability: WorkerAvailabilityRecord[];
 };
 
-export default function WorkerProfilePage({ params }: WorkerProfilePageProps) {
+export default function WorkerProfilePage() {
+  const searchParams = useSearchParams();
+  const workerId = searchParams.get("workerId") ?? "";
   const configured = isSupabaseConfigured();
-  const [workerId, setWorkerId] = useState("");
   const [state, setState] = useState<WorkerProfileState>({
     loading: true,
     error: configured ? "" : "Supabase is not configured.",
@@ -35,25 +31,16 @@ export default function WorkerProfilePage({ params }: WorkerProfilePageProps) {
   });
 
   useEffect(() => {
-    let active = true;
-
-    async function resolveParams() {
-      const resolved = await params;
-      if (!active) {
-        return;
-      }
-      setWorkerId(resolved.workerId);
+    if (!configured) {
+      return;
     }
 
-    void resolveParams();
-
-    return () => {
-      active = false;
-    };
-  }, [params]);
-
-  useEffect(() => {
-    if (!configured || !workerId) {
+    if (!workerId) {
+      setState((current) => ({
+        ...current,
+        loading: false,
+        error: "Worker not found.",
+      }));
       return;
     }
 
@@ -61,6 +48,12 @@ export default function WorkerProfilePage({ params }: WorkerProfilePageProps) {
     const supabase = getSupabaseBrowserClient();
 
     async function loadWorkerProfile() {
+      setState((current) => ({
+        ...current,
+        loading: true,
+        error: "",
+      }));
+
       const [
         { data: worker, error: workerError },
         { data: availability, error: availabilityError },
@@ -81,10 +74,7 @@ export default function WorkerProfilePage({ params }: WorkerProfilePageProps) {
         return;
       }
 
-      const nextError =
-        workerError?.message ||
-        availabilityError?.message ||
-        "";
+      const nextError = workerError?.message || availabilityError?.message || "";
 
       setState({
         loading: false,
